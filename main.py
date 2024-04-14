@@ -2,6 +2,7 @@ from pathlib import Path
 from scanfile import file
 from reportlab.pdfgen import canvas
 
+PREAUTH = False # Found a PREAUTH QR?
 files = [] # Jpeg files in s://
 for f in [f for f in Path('s:/').glob('**/*') if f.is_file() and f.suffix =='.jpeg']:  
   fi = file(f)  
@@ -19,7 +20,8 @@ for f in files:
     while p: # while has Page
         if p.barcode: # Page has Barcode?
             if f.hascanvas: c.save() # Save old PDF 
-            c = f.CreatePDF(p) # Create new PDF
+            if p.preauth: PREAUTH = True # Check page for PREAUTH
+            c = f.CreatePDF(p , preauth=PREAUTH) # Create new PDF
         else: # No barcode
            if f.hascanvas: c.showPage() # Add page break
         if f.hascanvas: f.AppendPDF(p , c) # Write page to PDF

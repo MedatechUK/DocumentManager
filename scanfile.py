@@ -4,6 +4,7 @@ from pathlib import Path
 import datetime
 
 import pyodbc 
+import json
 
 import cv2 
 from pyzbar.pyzbar import decode 
@@ -17,7 +18,7 @@ from reportlab.rl_config import defaultPageSize
 PAGE_HEIGHT=defaultPageSize[1]; PAGE_WIDTH=defaultPageSize[0]
 
 class PDFfile:
-    def __init__(self, f , p):        
+    def __init__(self, f , p , preauth):        
         self.uid = str(uuid.uuid4())
         self.folder = "f://scans//"        
         self.path = os.path.join(self.folder , self.uid + ".pdf")
@@ -25,6 +26,7 @@ class PDFfile:
         self.thisuser = f.thisuser
         self.thisdate = f.thisdate
         self.barcode = p.barcode
+        self.preauth = preauth
         self.url = "../../system/mail/scans/{}".format(self.uid + ".pdf")
         
     def dbSave(self):
@@ -86,8 +88,17 @@ class Page:
         self.pageid = pageid
         self.path = os.path.abspath(path)
         self.barcode = []            
-        for barcode in decode(cv2.imread(self.path)) :                  
-            self.barcode.append(barcode)
+        self.inbuff = []
+        for barcode in decode(cv2.imread(self.path)) :                        
+            try:
+                if barcode.type == "QRCODE":
+                    data = json.loads(barcode.data.decode())
+                    self.inbuff = data["in"]                        
+            except  : pass    
+            finally : self.barcode.append(barcode)
+    
+    def preauth(self):
+        for i in [i for i in self.inbuff["in"] if i['i']=='PREAUTH']: return True
 
 class file:
     def __init__(self, fname):
@@ -131,9 +142,9 @@ class file:
         for q in self.pages:
             os.remove(q.path)
             
-    def CreatePDF(self, p):
-        self.hascanvas = True
-        pdf = PDFfile(self , p)        
+    def CreatePDF(self, p , preauth = False):
+        self.hascanvas = True        
+        pdf = PDFfile(self , p , preauth)        
         self.PDFfiles.append(pdf)
         return canvas.Canvas(pdf.path, pagesize=A4)
     
