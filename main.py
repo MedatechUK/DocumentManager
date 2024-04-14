@@ -16,7 +16,7 @@ for f in [f for f in Path('s:/').glob('**/*') if f.is_file() and f.suffix =='.jp
     if ad:
         files.append(fi) # Add New file
 
-for f in files:
+for f in [ f for f in files if not f.Wait() ]: # Newest page > 2mins old
     p = f.NextPage() # Get First Page of file
     while p: # while has Page
         if p.barcode: # Page has Barcode?

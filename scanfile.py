@@ -1,7 +1,7 @@
 import os
 import uuid
 from pathlib import Path
-import datetime
+from datetime import *
 
 import pyodbc 
 import json
@@ -190,6 +190,7 @@ class file:
         self.pages = []        
         self.PDFfiles = []
         self.hascanvas = False
+        self.NewestPage = datetime(1988, 1, 1)
 
         self.err = False
         if fname.stem.count('_')>0:        
@@ -200,10 +201,15 @@ class file:
         else:
             self.err = True                
 
+    def Wait(self):
+        return self.NewestPage > datetime.now() - timedelta(minutes=2)
+    
     def Compare(self, file):
         return file.device == self.device and file.thisdate == self.thisdate and file.thisuser == self.thisuser
     
     def AddPage(self, i):     
+        if datetime.fromtimestamp(os.path.getmtime(i._str)) > self.NewestPage: 
+            self.NewestPage = datetime.fromtimestamp(os.path.getmtime(i._str))
         if i.stem.count('_')==2:                    
             self.pages.append( Page(int(i.stem.split('_')[2]) , i))
         else:            
@@ -225,7 +231,7 @@ class file:
         self.hascanvas = True        
         pdf = PDFfile(self , p , preauth)        
         self.PDFfiles.append(pdf)
-        return canvas.Canvas(pdf.path, pagesize=A4)
+        return canvas.Canvas(pdf.path, pagesize=A4, pageCompression=1)
     
     def AppendPDF(self, p, c):
         c.drawInlineImage(p.path, inch*.25, inch*.25, PAGE_WIDTH-(.5*inch), PAGE_HEIGHT-(.316*inch))
