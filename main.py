@@ -31,6 +31,6 @@ for f in [ f for f in files if not f.Wait() ]: # Newest page > 2mins old
     
     for pdf in f.PDFfiles:
         match pdf.hasqr:
-            case True   : pdf.dbSavePayCard() # Save PDF to Priority
-            case _      : pdf.dbSave() # Save PDF to Priority
-    # f.delPages() # Clean Jpegs
+            case True   : pdf.dbSavePayCard() # Save to CoW/Payement
+            case _      : pdf.dbSave() # Save PDF to Document
+    f.delPages() # Clean Jpegs
