@@ -141,7 +141,7 @@ class PDFfile:
                     , self.url 
                     , 'From ' + self.device
                     , self.uid 
-                    , (datetime.date.today() - datetime.date(1988, 1, 1)).total_seconds() / 60 
+                    , (datetime.today() - datetime(1988, 1, 1)).total_seconds() / 60 
                     , self.preauthStr()
                 )                     
                 # print(sql)                  
