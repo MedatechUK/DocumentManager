@@ -28,16 +28,21 @@ class PDFfile:
         self.barcode = p.barcode
         self.preauth = preauth
         self.url = "../../system/mail/scans/{}".format(self.uid + ".pdf")
+        self.qrdata = p.inbuff
+        self.hasqr = len(p.inbuff) > 0
         
-    def dbSave(self):
+    def constr(self):
         SERVER = 'CE-AZ-UK-S-PRIO'
         INSTANCE = 'TST'
         DATABASE = 'fuld1'
         USERNAME = 'tabula'
         PASSWORD = 'cheese8!'
         # dr = pyodbc.drivers()
-        cnxn = pyodbc.connect(f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER}\\{INSTANCE};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};MARS_Connection=Yes')
-        cursor = cnxn.cursor()        
+        return (f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER}\\{INSTANCE};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};MARS_Connection=Yes')
+    
+    def dbSave(self):
+        cnxn = pyodbc.connect(self.constr())
+        cursor = cnxn.cursor() 
         for b in self.barcode:
             print(b.data.decode())
             iv = cursor.execute("SELECT        " 
@@ -49,7 +54,7 @@ class PDFfile:
                 + "AND    (dbo.DOCUMENTS.DOCNO = N'{}') ".format(b.data.decode())
             )            
             for row in iv:  
-                cursor2 = cnxn.cursor()               
+                cursor2 = cnxn.cursor() 
                 sql = ( "INSERT INTO EXTFILES ( IV " 
                     + ",      TYPE "
                     + ",      ZCLA_FILECATEGORY "
@@ -83,6 +88,80 @@ class PDFfile:
         cnxn.commit()
         cnxn.close()
 
+    def dbSavePayCard(self):
+        cnxn = pyodbc.connect(self.constr())
+        cursor = cnxn.cursor() 
+        sql = ("SELECT PROJACTSCHED "
+            + "FROM ZCLA_PROJACTSCH "
+            + "WHERE 0=0 "
+            + "AND   PROJACT = {} "            
+            + "AND   CONTRACTSCHED IN ( "
+            + "SELECT CONTRACTSCHED "
+            + "FROM ZCLA_CONTRACTSCHEDUL "
+            + "WHERE IVDATE > datediff(minute,'1/1/1988', getdate()) "
+            + ")"
+        ).format( self.qrField("PROJACT") )   
+        sched = cursor.execute(sql)
+
+        for row in sched:  
+            cursor2 = cnxn.cursor() 
+            sql = ("SELECT      dbo.ZCLA_PROJACTSCH.PROJACTSCHED, dbo.nEXTFILENUM('{}', {}) "
+                + "FROM         dbo.ZCLA_PROJACTSCH "                                
+                + "WHERE        dbo.ZCLA_PROJACTSCH.PROJACTSCHED = {} "                
+            ).format( '~'
+                     , row[0] 
+                     , row[0] 
+            )
+            iv = cursor2.execute(sql)
+            
+            for row2 in iv:                  
+                cursor3 = cnxn.cursor() 
+                sql = ( "INSERT INTO EXTFILES ( IV " 
+                    + ",      TYPE "
+                    + ",      ZCLA_FILECATEGORY "
+                    + ",      EXTFILENUM "
+                    + ",      EXTFILENAME "
+                    + ",      EXTFILEDES "
+                    + ",      GUID "
+                    + ",      CURDATE "
+                    + ",      SIGNED ) "
+                    + "VALUES ( {} "
+                    + ",       '{}' "          
+                    + ",        {}  "
+                    + ",        {}  "
+                    + ",       '{}' "
+                    + ",       '{}' "
+                    + ",       '{}' "
+                    + ",        {} "
+                    + ",       '{}' )"                    
+                ).format( row2[0] 
+                    , '~'
+                    , self.qrField("CAT")
+                    , row2[1] 
+                    , self.url 
+                    , 'From ' + self.device
+                    , self.uid 
+                    , (datetime.date.today() - datetime.date(1988, 1, 1)).total_seconds() / 60 
+                    , self.preauthStr()
+                )                     
+                # print(sql)                  
+                ret = cursor3.execute( sql )                
+                cursor3.close()
+
+            cursor2.close
+
+        cursor.close()
+        cnxn.commit()
+        cnxn.close()
+
+    def qrField(self, field):
+        for i in [i for i in self.qrdata if i['i'].lower() == field.lower()]: return i['v']
+    
+    def preauthStr(self):
+        match self.preauth:
+            case True : return "Y"
+            case _    : return ""
+
 class Page:
     def __init__(self, pageid , path):
         self.pageid = pageid
@@ -93,16 +172,16 @@ class Page:
             try:
                 if barcode.type == "QRCODE":
                     data = json.loads(barcode.data.decode())
-                    self.inbuff = data["in"]                        
+                    for i in data["in"]:
+                        self.inbuff.append(i)
             except  : pass    
             finally : self.barcode.append(barcode)
     
     def preauth(self):
-        for i in [i for i in self.inbuff["in"] if i['i']=='PREAUTH']: return True
+        for i in [i for i in self.inbuff if i['i']=='PREAUTH']: return True
 
 class file:
-    def __init__(self, fname):
-                
+    def __init__(self, fname):                
         self.fname = fname
         self.device = fname.parent.name
         self.filename = fname.stem
