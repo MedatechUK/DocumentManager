@@ -33,4 +33,4 @@ for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old **
         match pdf.hasqr: # Has QR Data? **
             case True   : pdf.dbSavePayCard() # Save to CoW/Payement **
             case _      : pdf.dbSave() # Save PDF to any Document
-    f.delPages() # Clean Jpegs
+    f.delPages() # Clean used Jpegs
