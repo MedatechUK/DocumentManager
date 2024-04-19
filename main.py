@@ -4,7 +4,7 @@ from reportlab.pdfgen import canvas
 
 PREAUTH = False # Found a PREAUTH QR?
 files = [] # Jpeg files in s://
-for f in [f for f in Path('s:/').glob('**/*') if f.is_file() and f.suffix =='.jpeg']:  
+for f in [f for f in Path('s:/').glob('/*') if f.is_file() and f.suffix =='.jpeg']:  
   fi = file(f)  
   if not fi.err: # Validate file syntax
     ad = True
@@ -16,13 +16,13 @@ for f in [f for f in Path('s:/').glob('**/*') if f.is_file() and f.suffix =='.jp
     if ad:
         files.append(fi) # Add New file
 
-for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old **
+for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old 
     p = f.NextPage() # Get First Page of file
     while p: # while has Page
         if p.barcode: # Page has Barcode?
-            if f.hascanvas: c.save() # Save old PDF 
-            if p.preauth(): PREAUTH = True # Check page for PREAUTH **
-            if not p.preauth(Only=True): c = f.CreatePDF(p , preauth=PREAUTH) # Create new PDF where PREAUTH not only QR
+            if f.hascanvas: c.save() # Save previous PDF 
+            if p.preauth(): PREAUTH = True # Check page for PREAUTH 
+            if not p.preauth(Only=True): c = f.CreatePDF(p , preauth=PREAUTH) # New PDF where PREAUTH !NOT only QR
         else: # No barcode
            if f.hascanvas: c.showPage() # Add page break
         if f.hascanvas: f.AppendPDF(p , c) # Write page to PDF
@@ -30,7 +30,7 @@ for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old **
     if f.hascanvas: c.save() # Save current PDF
     
     for pdf in f.PDFfiles: # PDFs in this file
-        match pdf.hasqr: # Has QR Data? **
-            case True   : pdf.dbSavePayCard() # Save to CoW/Payement **
+        match pdf.hasqr: # Has QR Data? 
+            case True   : pdf.dbSavePayCard() # Save to CoW/Payement 
             case _      : pdf.dbSave() # Save PDF to any Document
     f.delPages() # Clean used Jpegs
