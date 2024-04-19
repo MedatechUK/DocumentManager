@@ -179,9 +179,11 @@ class Page:
     
     def preauth(self , Only=False):
         if Only: 
-            for i in [i for i in self.inbuff if i['i']!='PREAUTH']: return True
+            for i in [i for i in self.inbuff if i['i']!='PREAUTH']: return False
+            return True
         else:
             for i in [i for i in self.inbuff if i['i']=='PREAUTH']: return True
+            return False
 
 class file:
     def __init__(self, fname):                
