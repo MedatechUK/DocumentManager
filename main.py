@@ -22,7 +22,7 @@ for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old **
         if p.barcode: # Page has Barcode?
             if f.hascanvas: c.save() # Save old PDF 
             if p.preauth(): PREAUTH = True # Check page for PREAUTH **
-            c = f.CreatePDF(p , preauth=PREAUTH) # Create new PDF
+            if not p.preauth(Only=True): c = f.CreatePDF(p , preauth=PREAUTH) # Create new PDF where PREAUTH not only QR
         else: # No barcode
            if f.hascanvas: c.showPage() # Add page break
         if f.hascanvas: f.AppendPDF(p , c) # Write page to PDF

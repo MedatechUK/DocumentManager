@@ -177,8 +177,11 @@ class Page:
             except  : pass    
             finally : self.barcode.append(barcode)
     
-    def preauth(self):
-        for i in [i for i in self.inbuff if i['i']=='PREAUTH']: return True
+    def preauth(self , Only=False):
+        if Only: 
+            for i in [i for i in self.inbuff if i['i']!='PREAUTH']: return True
+        else:
+            for i in [i for i in self.inbuff if i['i']=='PREAUTH']: return True
 
 class file:
     def __init__(self, fname):                
