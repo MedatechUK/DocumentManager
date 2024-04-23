@@ -1,11 +1,23 @@
 from pathlib import Path
 from scanfile import file
 from reportlab.pdfgen import canvas
+from connect import Drive
+from MedatechUK.mLog import mLog , os
+
+log = mLog()
+os.chdir(Path(__file__).parent)
+log.start( os.getcwd(), "DEBUG" )
+log.logger.debug("Starting {}".format(__file__) )
+
+d = Drive()
+if not d.Exists():
+    if not d.Connect(): print(d.err)            
+else: print("Remote Drive Connected!")
 
 PREAUTH = False # Found a PREAUTH QR?
 files = [] # Jpeg files in s://
-for f in [f for f in Path('s:/').glob('/*') if f.is_file() and f.suffix =='.jpeg']:  
-  fi = file(f)  
+for f in [f for f in Path('s:/').glob('**/*') if f.is_file() and f.suffix =='.jpeg']:  
+  fi = file(f , log.logger)  
   if not fi.err: # Validate file syntax
     ad = True
     for i in files:
@@ -16,9 +28,9 @@ for f in [f for f in Path('s:/').glob('/*') if f.is_file() and f.suffix =='.jpeg
     if ad:
         files.append(fi) # Add New file
 
-for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old 
+for f in [ f for f in files if not f.Wait() ]: # Pages > 2mins old     
     p = f.NextPage() # Get First Page of file
-    while p: # while has Page
+    while p != None: # while has Page
         if p.barcode: # Page has Barcode?
             if f.hascanvas: c.save() # Save previous PDF 
             if p.preauth(): PREAUTH = True # Check page for PREAUTH 

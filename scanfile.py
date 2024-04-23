@@ -15,6 +15,12 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.rl_config import defaultPageSize
 
+from MedatechUK.mLog import mLog
+import os
+
+import string
+from ctypes import windll
+
 PAGE_HEIGHT=defaultPageSize[1]; PAGE_WIDTH=defaultPageSize[0]
 
 class PDFfile:
@@ -186,7 +192,9 @@ class Page:
             return False
 
 class file:
-    def __init__(self, fname):                
+    def __init__(self, fname , log):    
+        
+        self.log = log        
         self.fname = fname
         self.device = fname.parent.name
         self.filename = fname.stem
@@ -203,8 +211,8 @@ class file:
             self.thisdate = fname.stem.split('_')[1]                    
             self.AddPage(fname)
 
-        else:
-            self.err = True                
+        else:            
+            self.err = True                        
 
     def Wait(self):
         return self.NewestPage > datetime.now() - timedelta(minutes=2)
@@ -212,7 +220,8 @@ class file:
     def Compare(self, file):
         return file.device == self.device and file.thisdate == self.thisdate and file.thisuser == self.thisuser
     
-    def AddPage(self, i):     
+    def AddPage(self, i):   
+        self.log.debug("Adding Page to file:" + i.stem)  
         if datetime.fromtimestamp(os.path.getmtime(i._str)) > self.NewestPage: 
             self.NewestPage = datetime.fromtimestamp(os.path.getmtime(i._str))
         if i.stem.count('_')==2:                    
@@ -220,23 +229,30 @@ class file:
         else:            
             self.pages.append(Page(1 , i))
 
-    def NextPage(self, p=0):
+    def NextPage(self, p=0):        
         sa = []
         for q in [q for q in self.pages if q.pageid > p]:
             sa.append(q.pageid)
         if len(sa) > 0:
-            for q in [q for q in self.pages if q.pageid == min(sa)]:            
-                    return q
+            for q in [q for q in self.pages if q.pageid == min(sa)]: 
+                self.log.debug("Next Page after:" + str(p) + " is " + str(q.pageid))
+                return q                   
+        else: 
+            self.log.debug(str(p) + " is last page")
+            return None
     
     def delPages(self):
         for q in self.pages:
+            self.log.debug("Deleting Page: " + q.path)
             os.remove(q.path)
             
-    def CreatePDF(self, p , preauth = False):
+    def CreatePDF(self, p , preauth = False):        
         self.hascanvas = True        
         pdf = PDFfile(self , p , preauth)        
+        self.log.debug("Create PDF: " + pdf.path)
         self.PDFfiles.append(pdf)
         return canvas.Canvas(pdf.path, pagesize=A4, pageCompression=1)
     
     def AppendPDF(self, p, c):
+        self.log.debug("Adding Page to PDF: " + p.path)
         c.drawInlineImage(p.path, inch*.25, inch*.25, PAGE_WIDTH-(.5*inch), PAGE_HEIGHT-(.316*inch))
