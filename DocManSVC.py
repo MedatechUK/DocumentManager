@@ -1,7 +1,6 @@
 import win32serviceutil , debugpy
 from MedatechUK.svc import AppSvc
 from pathlib import Path
-from reportlab.pdfgen import canvas
 from scanfile import file
 from connect import Drive
 
@@ -21,7 +20,12 @@ class MySVC(AppSvc):
         if self.debuginit: debugpy.breakpoint() 
 
         d = Drive(self.config.file.path[0:1].upper()) # Build Azure Connection
-        if not d.Exists(): d.Connect()  # Connect Azure drive        
+        if not d.Exists(): d.Connect()  # Connect Azure drive    
+
+        self.log.logger.info("Searching for [{}] in [{}]...".format( 
+            self.config.file.suffix
+            , self.config.file.path
+        ))    
         
     def main(self):     
         if self.debug: debugpy.breakpoint() 

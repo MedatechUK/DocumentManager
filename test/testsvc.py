@@ -13,9 +13,7 @@ class MySVC(AppSvc):
         AppSvc.__init__(self,args)
 
     def main(self):       
-        if self.debug:
-            debugpy.wait_for_client()
-            debugpy.breakpoint()          
+        if self.debug: debugpy.breakpoint()          
             
         self.log.logger.debug(self.clArg.byName(['env','e']))
 
