@@ -1,0 +1,122 @@
+    def constr(self):
+        SERVER = 'CE-AZ-UK-S-PRIO'
+        INSTANCE = 'TST'
+        DATABASE = 'fuld1'
+        USERNAME = 'tabula'
+        PASSWORD = 'cheese8!'
+        # dr = pyodbc.drivers()
+        return (f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER}\\{INSTANCE};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD};MARS_Connection=Yes')
+    
+    def dbSave(self):
+        cnxn = pyodbc.connect(self.constr())
+        cursor = cnxn.cursor() 
+        for b in self.barcode:
+            print(b.data.decode())
+            iv = cursor.execute("SELECT        " 
+                + "dbo.DOCUMENTS.DOC, ISNULL(1 + MAX(dbo.EXTFILES.EXTFILENUM), 1) " 
+                + "FROM            dbo.DOCUMENTS LEFT OUTER JOIN dbo.EXTFILES ON dbo.DOCUMENTS.DOC = dbo.EXTFILES.IV "
+                + "GROUP BY dbo.DOCUMENTS.DOC, dbo.DOCUMENTS.DOCNO, dbo.EXTFILES.TYPE "
+                + "HAVING (dbo.DOCUMENTS.DOC > 0) "            
+                + "AND    (dbo.EXTFILES.TYPE = N'D' OR dbo.EXTFILES.TYPE IS NULL)  "
+                + "AND    (dbo.DOCUMENTS.DOCNO = N'{}') ".format(b.data.decode())
+            )            
+            for row in iv:  
+                cursor2 = cnxn.cursor() 
+                sql = ( "INSERT INTO EXTFILES ( IV " 
+                    + ",      TYPE "
+                    + ",      ZCLA_FILECATEGORY "
+                    + ",      EXTFILENUM "
+                    + ",      EXTFILENAME "
+                    + ",      EXTFILEDES "
+                    + ",      GUID "
+                    + ",      CURDATE ) "
+                    + "VALUES ( {} "
+                    + ",       '{}' "          
+                    + ",        {}  "
+                    + ",        {}  "
+                    + ",       '{}' "
+                    + ",       '{}' "
+                    + ",       '{}' "
+                    + ",        {} )"                    
+                ).format( row[0] 
+                    , 'D' 
+                    , -1
+                    , row[1] 
+                    , self.url 
+                    , 'From ' + self.device
+                    , self.uid 
+                    , (datetime.date.today() - datetime.date(1988, 1, 1)).total_seconds() / 60 
+                )                     
+                # print(sql)                  
+                ret = cursor2.execute( sql )                
+                cursor2.close()
+
+        cursor.close()
+        cnxn.commit()
+        cnxn.close()
+
+    def dbSavePayCard(self):
+        cnxn = pyodbc.connect(self.constr())
+        cursor = cnxn.cursor() 
+        sql = ("SELECT PROJACTSCHED "
+            + "FROM ZCLA_PROJACTSCH "
+            + "WHERE 0=0 "
+            + "AND   PROJACT = {} "            
+            + "AND   CONTRACTSCHED IN ( "
+            + "SELECT CONTRACTSCHED "
+            + "FROM ZCLA_CONTRACTSCHEDUL "
+            + "WHERE IVDATE > datediff(minute,'1/1/1988', getdate()) "
+            + ")"
+        ).format( self.qrField("PROJACT") )   
+        sched = cursor.execute(sql)
+
+        for row in sched:  
+            cursor2 = cnxn.cursor() 
+            sql = ("SELECT      dbo.ZCLA_PROJACTSCH.PROJACTSCHED, dbo.nEXTFILENUM('{}', {}) "
+                + "FROM         dbo.ZCLA_PROJACTSCH "                                
+                + "WHERE        dbo.ZCLA_PROJACTSCH.PROJACTSCHED = {} "                
+            ).format( '~'
+                     , row[0] 
+                     , row[0] 
+            )
+            iv = cursor2.execute(sql)
+            
+            for row2 in iv:                  
+                cursor3 = cnxn.cursor() 
+                sql = ( "INSERT INTO EXTFILES ( IV " 
+                    + ",      TYPE "
+                    + ",      ZCLA_FILECATEGORY "
+                    + ",      EXTFILENUM "
+                    + ",      EXTFILENAME "
+                    + ",      EXTFILEDES "
+                    + ",      GUID "
+                    + ",      CURDATE "
+                    + ",      SIGNED ) "
+                    + "VALUES ( {} "
+                    + ",       '{}' "          
+                    + ",        {}  "
+                    + ",        {}  "
+                    + ",       '{}' "
+                    + ",       '{}' "
+                    + ",       '{}' "
+                    + ",        {} "
+                    + ",       '{}' )"                    
+                ).format( row2[0] 
+                    , '~'
+                    , self.qrField("CAT")
+                    , row2[1] 
+                    , self.url 
+                    , 'From ' + self.device
+                    , self.uid 
+                    , (datetime.today() - datetime(1988, 1, 1)).total_seconds() / 60 
+                    , self.preauthStr()
+                )                     
+                # print(sql)                  
+                ret = cursor3.execute( sql )                
+                cursor3.close()
+
+            cursor2.close
+
+        cursor.close()
+        cnxn.commit()
+        cnxn.close()

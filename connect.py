@@ -1,16 +1,18 @@
 import subprocess
 import string , os
 from ctypes import windll
+from MedatechUK.mLog import mLog 
 
 class Drive:
-    def __init__(self):
+    def __init__(self , letter):
+        self.log = mLog()
+        self.letter = letter
         self.drives = []
-        self.GetDrives()        
-        self.letter = "S"
+        self.GetDrives()                
         self.err = ""
 
     def Exists(self):
-        for i in [ i for i in self.drives if i==(self.letter)] : return True
+        for i in [ i for i in self.drives if i.lower()==(self.letter.lower())] : return True
         return False
     
     def Connect(self):        
@@ -26,10 +28,13 @@ class Drive:
             text = True ,
             stdout = subprocess.PIPE
         )        
-        self.err = proc.stdout
-        self.GetDrives()
-        return self.Exists()
-    
+        
+        self.GetDrives()        
+        if not self.Exists():
+            self.log.logger.critical(proc.stdout)         
+            raise "Could not connect to Remote Drive."
+        else: self.log.logger.info("Remote Drive Connected!") 
+
     def GetDrives(self):
         self.drives = []
         bitmask = windll.kernel32.GetLogicalDrives()

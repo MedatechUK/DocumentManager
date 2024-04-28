@@ -13,10 +13,14 @@
             "justMyCode": false
         },
         {
-            "name": "Python Debugger: Attach using Process Id",
+            "name": "Python Debugger: Attach",
             "type": "debugpy",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
-        }
+            "request": "attach",            
+            "connect": {
+              "host": "localhost",
+              "port": 5678
+            },
+            "justMyCode": false
+          }
     ]
 }
