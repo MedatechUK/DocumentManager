@@ -58,9 +58,10 @@ class MySVC(AppSvc):
             
             for pdf in f.PDFfiles: # PDFs in this file
                 match pdf.hasqr :  # Has QR Data? 
-                    case True   : pdf.dbSavePayCard() # Save to CoW/Payement 
-                    case _      : pdf.dbSave() # Save PDF to any Document
-            f.delPages() # Clean used Jpegs
-
+                    case True   : 
+                        if pdf.dbSavePayCard() : f.delPages()  # Save to CoW/Payement 
+                    case _      : 
+                        if pdf.dbSave() : f.delPages() # Save PDF to any Document
+            
 if __name__ == '__main__':    
     win32serviceutil.HandleCommandLine(MySVC)    

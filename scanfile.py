@@ -44,41 +44,41 @@ class PDFfile:
         self.hasqr = len(p.inbuff) > 0
     
     def dbSave(self):
-        for b in self.barcode:        
+        try :
+            for b in self.barcode:        
+                r = Response()                  # Create an object to hold the result
+                q = oTrans.DOC(uid = self.uid   # Create Transaction
+                    , barcode = b.data.decode()            
+                    , url = self.url 
+                    , user = self.thisuser
+                    , prn = self.device
+                )        
+                q.toPri(                        # Send this object to Priority
+                    self.svc.oDataConfig
+                    , q.toFlatOdata 
+                    , response = r
+                )
+            return True
+        except: return False
+
+    def dbSavePayCard(self):
+        try:
             r = Response()                  # Create an object to hold the result
-            q = oTrans.DOC(uid = self.uid   # Create Transaction
-                , barcode = b.data.decode()            
+            q = oTrans.CoW(uid = self.uid   # Create Transaction
+                , fix = self.qrField("PROJACT") 
+                , cat = self.qrField("CAT")
+                , preauth = self.preauthStr()
                 , url = self.url 
                 , user = self.thisuser
                 , prn = self.device
             )        
             q.toPri(                        # Send this object to Priority
-                Config(
-                    env = self.svc.config.odata.env
-                    , path = os.getcwd()
-                )
+                self.svc.oDataConfig
                 , q.toFlatOdata 
                 , response = r
             )
-
-    def dbSavePayCard(self):
-        r = Response()                  # Create an object to hold the result
-        q = oTrans.CoW(uid = self.uid   # Create Transaction
-            , fix = self.qrField("PROJACT") 
-            , cat = self.qrField("CAT")
-            , preauth = self.preauthStr()
-            , url = self.url 
-            , user = self.thisuser
-            , prn = self.device
-        )        
-        q.toPri(                        # Send this object to Priority
-            Config(
-                env = self.svc.config.odata.env
-                , path = os.getcwd()
-            )
-            , q.toFlatOdata 
-            , response = r
-        )
+            return True
+        except: return False
 
     def qrField(self, field):
         for i in [i for i in self.qrdata if i['i'].lower() == field.lower()]: return i['v']
