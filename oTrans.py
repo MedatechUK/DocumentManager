@@ -69,11 +69,12 @@ class CoW(SerialBase) :
         SerialT(self, "typename")
         SerialT(self, "fix" , pCol="INT1" , pType="INT")
         SerialT(self, "cat" , pCol="INT2" , pType="INT")
+        SerialT(self, "user" , pCol="TEXT1" , pType="CHAR")        
+        SerialT(self, "prn" , pCol="TEXT2" , pType="CHAR")
         SerialT(self, "preauth" , pCol="TEXT3" , pType="CHAR")
         SerialT(self, "url" , pCol="TEXT21" , pType="CHAR")
         SerialT(self, "uid" , pCol="TEXT22" , pType="CHAR")
-        SerialT(self, "user" , pCol="TEXT1" , pType="CHAR")
-        SerialT(self, "prn" , pCol="TEXT2" , pType="CHAR")
+        
 
     #endregion
 
@@ -127,12 +128,12 @@ class DOC(SerialBase) :
         SerialBase.__init__(self , SerialF(fname="ZODA_TRANS", rt=1, typename="DOC"), **kwargs)
         SerialT(self, "rt")
         SerialT(self, "bubbleid")
-        SerialT(self, "typename")        
-        SerialT(self, "url" , pCol="TEXT20" , pType="CHAR")
-        SerialT(self, "uid" , pCol="TEXT21" , pType="CHAR")
+        SerialT(self, "typename")                
         SerialT(self, "user" , pCol="TEXT1" , pType="CHAR")
         SerialT(self, "prn" , pCol="TEXT2" , pType="CHAR")
         SerialT(self, "barcode" , pCol="TEXT3" , pType="CHAR")
-
+        SerialT(self, "url" , pCol="TEXT21" , pType="CHAR")
+        SerialT(self, "uid" , pCol="TEXT22" , pType="CHAR")
+        
     #endregion
                 
