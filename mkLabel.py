@@ -18,7 +18,7 @@ def draw_label(label, width, height, obj):
     qrcode = pyqrcode.create("{'in':[{'i':'PROJACT','v':"+ str(obj.projact) +",{'i':'CAT','v': "+ str(obj.cat) + "}]}")                             
     qrcode.png('qr.png',scale=8)
 
-    label.add ( shapes.Image ( 3 , 5 , width-3, height-1, 'qr.png' ))
+    label.add ( shapes.Image ( 3 , 5 , height-1, height-1, 'qr.png' ))
     label.add ( shapes.String ( 16, 2, str(obj.des), fontName="Helvetica", fontSize=12 ))
 
 arg = clArg()
@@ -30,8 +30,8 @@ if arg.byName(["site"])==None:
 # Create an A4 portrait (210mm x 297mm) sheets with 4 columns and 8 rows of
 # labels. Each label is 30mm x 30mm with a 2mm rounded corner. The margins are
 # automatically calculated.
-specs = labels.Specification(210, 297, 4, 8, 30, 30, corner_radius=2)
-sheet = labels.Sheet(specs, draw_label, border=True)
+specs = labels.Specification(210, 297, 3, 7, 63.5, 38.1, corner_radius=2)
+sheet = labels.Sheet(specs, draw_label, border=False)
 
 settingsini = os.getcwd() + "\\settings.ini"        
 config = Config(

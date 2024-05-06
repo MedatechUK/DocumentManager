@@ -63,8 +63,8 @@ class PDFfile:
 
     def dbSavePayCard(self):
         try:
-            r = Response()                  # Create an object to hold the result
-            q = oTrans.CoW(uid = self.uid   # Create Transaction
+            r = Response()                      # Create an object to hold the result
+            q = oTrans.CoW(uid = self.uid       # Create Transaction
                 , fix = self.qrField("PROJACT") 
                 , cat = self.qrField("CAT")
                 , preauth = self.preauthStr()
@@ -72,7 +72,7 @@ class PDFfile:
                 , user = self.thisuser
                 , prn = self.device
             )        
-            q.toPri(                        # Send this object to Priority
+            q.toPri(                            # Send this object to Priority
                 self.svc.oDataConfig
                 , q.toFlatOdata 
                 , response = r
