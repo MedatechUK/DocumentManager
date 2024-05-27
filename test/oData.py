@@ -1,6 +1,6 @@
-from MedatechUK.mLog import mLog , os 
-from MedatechUK.oDataConfig import Config
-from MedatechUK.apy import Response
+from MedatechUK.APY.mLog import mLog , os 
+from MedatechUK.APY.oDataConfig import Config
+from MedatechUK.APY.apy import Response
 
 from pathlib import Path 
 import oTrans, json

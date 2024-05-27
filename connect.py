@@ -1,7 +1,7 @@
 import subprocess
 import string , os
 from ctypes import windll
-from MedatechUK.mLog import mLog 
+from MedatechUK.APY.mLog import mLog 
 
 class Drive:
     def __init__(self , letter):
@@ -12,8 +12,9 @@ class Drive:
         self.err = ""
 
     def Exists(self):
-        for i in [ i for i in self.drives if i.lower()==(self.letter.lower())] : return True
-        return False
+        for d in self.letter:            
+            if not d in self.drives: return False
+        return True
     
     def Connect(self):        
         f = open(os.getcwd() + "//connect.ps", "r")  
@@ -28,7 +29,8 @@ class Drive:
             text = True ,
             stdout = subprocess.PIPE
         )        
-        
+        self.log.logger.critical(proc.stdout) 
+
         self.GetDrives()        
         if not self.Exists():
             self.log.logger.critical(proc.stdout)         

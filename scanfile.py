@@ -19,9 +19,9 @@ from reportlab.rl_config import defaultPageSize
 PAGE_HEIGHT=defaultPageSize[1]; PAGE_WIDTH=defaultPageSize[0]
 
 # Medatech Imports
-from MedatechUK.mLog import mLog 
-from MedatechUK.oDataConfig import Config
-from MedatechUK.apy import Response
+from MedatechUK.APY.mLog import mLog 
+from MedatechUK.APY.oDataConfig import Config
+from MedatechUK.APY.apy import Response
 
 # Local Imports
 import oTrans

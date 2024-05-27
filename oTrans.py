@@ -1,4 +1,4 @@
-from MedatechUK.Serial import SerialBase , SerialT , SerialF
+from MedatechUK.APY.Serial import SerialBase , SerialT , SerialF
 
 class CoW(SerialBase) :
     #region "Properties"

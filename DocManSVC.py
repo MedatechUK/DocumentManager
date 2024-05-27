@@ -1,5 +1,5 @@
 import win32serviceutil , debugpy
-from MedatechUK.svc import AppSvc
+from MedatechUK.APY.svc import AppSvc
 from pathlib import Path
 from scanfile import file
 from connect import Drive
@@ -19,7 +19,10 @@ class MySVC(AppSvc):
     def init(self):
         if self.debuginit: debugpy.breakpoint() 
 
-        d = Drive(self.config.file.path[0:1].upper()) # Build Azure Connection
+        d = Drive([
+            self.config.file.path[0:1].upper()
+            , self.config.file.savedir[0:1].upper()
+            ]) # Build Azure Connection
         if not d.Exists(): d.Connect()  # Connect Azure drive    
 
         self.log.logger.info("Searching for [{}] in [{}]...".format( 

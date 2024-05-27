@@ -1,5 +1,5 @@
 import win32serviceutil , debugpy
-from MedatechUK.svc import AppSvc
+from MedatechUK.APY.svc import AppSvc
 from pathlib import Path
 
 class MySVC(AppSvc):    
