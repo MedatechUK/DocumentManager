@@ -49,13 +49,16 @@ class MySVC(AppSvc):
             PREAUTH = False # Found a PREAUTH QR?
             p = f.NextPage() # Get First Page of file
             while p != None: # while has Page
-                if p.barcode: # Page has Barcode?
-                    if f.hascanvas: c.save() # Save previous PDF 
-                    if p.preauth(): PREAUTH = True # Check page for PREAUTH 
-                    if not p.preauth(Only=True): c = f.CreatePDF(p , preauth=PREAUTH) # New PDF where PREAUTH !NOT only QR
-                else: # No barcode
-                    if f.hascanvas: c.showPage() # Add page break
-                if f.hascanvas: f.AppendPDF(p , c) # Write page to PDF
+                if p.preauth(): PREAUTH = True # Check page for PREAUTH 
+                if p.barcode and not p.preauth(Only=True): # Page has Barcode?
+                    if f.hascanvas: c.save() # Save previous PDF                     
+                    c = f.CreatePDF(p , preauth=PREAUTH) # New PDF where PREAUTH !NOT only QR
+                    f.AppendPDF(p , c) # Write page to PDF
+                elif p.preauth(Only=True): 
+                    pass
+                elif f.hascanvas: # No barcode
+                    c.showPage() # Add page break
+                    f.AppendPDF(p , c) # Write page to PDF
                 p = f.NextPage(p.pageid) # Get next page in file
             if f.hascanvas: c.save() # Save current PDF
             

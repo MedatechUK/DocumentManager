@@ -175,7 +175,7 @@ class file:
     def delPages(self):
         for q in self.pages:
             self.log.logger.debug("Deleting Page: [{}]".format( q.path))
-            os.remove(q.path)
+            if os.path.exists(q.path): os.remove(q.path)
             
     def CreatePDF(self, p , preauth = False):        
         self.hascanvas = True                
