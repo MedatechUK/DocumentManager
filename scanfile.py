@@ -107,6 +107,7 @@ class Page:
     
     def preauth(self , Only=False):
         if Only: 
+            if len(self.inbuff) == 0: return False
             for i in [i for i in self.inbuff if i['i']!='PREAUTH']: return False
             self.log.logger.debug("PreAuth ONLY - Skip [{}].".format( self.path ))
             return True
@@ -142,7 +143,7 @@ class file:
             self.err = True                        
 
     def Wait(self):
-        return self.NewestPage > datetime.now() - timedelta(minutes=2)
+        return self.NewestPage > datetime.now() - timedelta(minutes=1)
     
     def Compare(self, file):
         return file.device == self.device and file.thisdate == self.thisdate and file.thisuser == self.thisuser
